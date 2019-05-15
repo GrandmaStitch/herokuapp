@@ -59,12 +59,18 @@ form = '''<!DOCTYPE html>
         <input name="shortname">
     </label>
     <br>
-    <button type="submit">Save it!</button>
+    <button type="submit" onclick="myFunction()">Save it!</button>
 </form>
 <p>URIs I know about:
 <pre>
 {}
 </pre>
+<script>{}</script>
+'''
+
+script = '''function myFunction() {
+  alert("I am an alert box!");
+}
 '''
 
 
@@ -108,7 +114,8 @@ class Shortener(http.server.BaseHTTPRequestHandler):
             # List the known associations in the form.
             known = "\n".join("{} : {}".format(key, memory[key])
                               for key in sorted(memory.keys()))
-            self.wfile.write(form.format(known).encode())
+            self.wfile.write(form.format(known, script).encode())
+
 
     def do_POST(self):
         # Decode the form data.
