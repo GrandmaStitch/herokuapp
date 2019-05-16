@@ -44,7 +44,9 @@
 import http.server
 import requests
 import os
+import threading
 from urllib.parse import unquote, parse_qs, urlparse
+from socketserver import ThreadingMixIn
 
 memory = {}
 
@@ -66,6 +68,10 @@ form = '''<!DOCTYPE html>
 {}
 </pre>
 '''
+
+class ThreadHTTPServer(ThreadingMixIn, http.server.HTTPServer):
+    "This is an HTTPServer that supports thread-based concurrency."
+
 
 def CheckURI(uri, timeout=10):
     '''Check whether this URI is reachable, i.e. does it return a 200 OK?
@@ -132,19 +138,15 @@ class Shortener(http.server.BaseHTTPRequestHandler):
             self.send_header('Location', '/')
             self.end_headers()
             self.wfile.write('Check the Long URI field pls. It is an invalid URI.'.encode())
-
         elif CheckURI(longuri):
             # This URI is good!  Remember it under the specified name.
             memory[shortname] = longuri
-
             # 4. Serve a redirect to the root page (the form).
             self.send_response(303)
             self.send_header('Location', '/')
             self.end_headers()
-
         else:
             # Didn't successfully fetch the long URI.
-
             # 5. Send a 404 error with a useful message.
             self.send_response(404)
             self.send_header('Content-type', 'text/plain; charset=utf-8')
@@ -154,5 +156,5 @@ class Shortener(http.server.BaseHTTPRequestHandler):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))   # Use PORT if it's there.
     server_address = ('', port)
-    httpd = http.server.HTTPServer(server_address, Shortener)
+    httpd = ThreadHTTPServer(server_address, Shortener)
     httpd.serve_forever()
