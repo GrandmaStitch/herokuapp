@@ -65,14 +65,7 @@ form = '''<!DOCTYPE html>
 <pre>
 {}
 </pre>
-<script>{}</script>
 '''
-
-script = '''function myFunction() {
-  alert("I am an alert box!");
-}
-'''
-
 
 def CheckURI(uri, timeout=10):
     '''Check whether this URI is reachable, i.e. does it return a 200 OK?
@@ -114,7 +107,7 @@ class Shortener(http.server.BaseHTTPRequestHandler):
             # List the known associations in the form.
             known = "\n".join("{} : {}".format(key, memory[key])
                               for key in sorted(memory.keys()))
-            self.wfile.write(form.format(known, script).encode())
+            self.wfile.write(form.format(known).encode())
 
 
     def do_POST(self):
